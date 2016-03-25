@@ -1,0 +1,5 @@
+.*.sw*
+.*.un~
+.tox
+*.egg-info
+*.pyc
