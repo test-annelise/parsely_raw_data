@@ -64,7 +64,7 @@ CREATE TABLE events
     connection.commit()
 
 
-def copy_from_s3(apikey,
+def copy_from_s3(network,
                  s3_prefix,
                  host="",
                  user="",
@@ -75,9 +75,9 @@ def copy_from_s3(apikey,
                  secret_access_key=""):
     """Use the Redshift COPY command to copy event data from S3
 
-    :param apikey: The Parse.ly apikey for which to copy data (eg
-        "blog.parsely.com")
-    :type apikey: str
+    :param network: The Parse.ly network for which to copy data (eg
+        "parsely-blog")
+    :type network: str
     :param s3_prefix: The S3 timestamp directory prefix from which to fetch data
         batches, formatted as YYYY/MM/DD
     :type s3_prefix: str
@@ -99,11 +99,11 @@ def copy_from_s3(apikey,
     connection = psycopg2.connect(host=host, port=port, user=user,
                                   password=password, database=database)
     query = "copy visits\n"
-    "from 's3://parsely_dw_{apikey}/{s3_prefix}'\n"
+    "from 's3://parsely-dw-{network}/{s3_prefix}'\n"
     "credentials 'aws_access_key_id={aws_access_key_id};"
     "aws_secret_access_key={aws_secret_access_key}'\n"
     "json as 'auto' gzip;".format(
-        apikey=apikey,
+        network=utils.clean_network(network),
         s3_prefix=s3_prefix,
         aws_access_key_id=access_key_id,
         aws_secret_access_key=secret_access_key)
@@ -132,7 +132,7 @@ def main():
 
     if args.command == "copy_from_s3":
         copy_from_s3(
-            args.apikey,
+            args.network,
             args.s3_prefix,
             host=args.redshift_host,
             user=args.redshift_user,

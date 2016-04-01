@@ -24,16 +24,16 @@ limitations under the License.
 log = logging.getLogger(__name__)
 
 
-def events_s3(apikey,
+def events_s3(network,
               prefix="",
               access_key_id="",
               secret_access_key="",
               region_name="us-east-1"):
     """Yield a stream of events from a Parse.ly S3 bucket
 
-    :param apikey: The Parse.ly apikey for which to perform reads (eg
-        "blog.parsely.com")
-    :type apikey: str
+    :param network: The Parse.ly network for which to perform reads (eg
+        "parsely-blog")
+    :type network: str
     :param s3_prefix: The S3 timestamp directory prefix from which to fetch data
         batches, formatted as YYYY/MM/DD
     :type s3_prefix: str
@@ -44,7 +44,7 @@ def events_s3(apikey,
     :param region_name: The AWS region in which to perform fetches
     :type region_name: str
     """
-    bucket = "parsely_dw_{}".format(apikey)
+    bucket = "parsely-dw-{}".format(utils.clean_network(network))
     client = boto3.client('s3', **{
         'aws_access_key_id': access_key_id,
         'aws_secret_access_key': secret_access_key,
@@ -65,7 +65,7 @@ def main():
     args = utils.get_default_parser("Amazon S3 utilities for Parse.ly").parse_args()
     event_counts = defaultdict(int)
     for event in events_s3(
-            args.apikey,
+            args.network,
             prefix=args.s3_prefix,
             access_key_id=args.aws_access_key_id,
             secret_access_key=args.aws_secret_access_key):

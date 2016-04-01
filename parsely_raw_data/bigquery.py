@@ -80,7 +80,7 @@ def write_events_bigquery(events,
     return True
 
 
-def load_batch_bigquery(apikey,
+def load_batch_bigquery(network,
                         s3_prefix="",
                         access_key_id="",
                         secret_access_key="",
@@ -91,9 +91,9 @@ def load_batch_bigquery(apikey,
                         dry_run=False):
     """Load a batch of events from S3 to BigQuery
 
-    :param apikey: The Parse.ly apikey for which to perform writes (eg
-        "blog.parsely.com")
-    :type apikey: str
+    :param network: The Parse.ly network for which to perform writes (eg
+        "parsely-blog")
+    :type network: str
     :param s3_prefix: The S3 timestamp directory prefix from which to fetch data
         batches, formatted as YYYY/MM/DD
     :type s3_prefix: str
@@ -117,7 +117,7 @@ def load_batch_bigquery(apikey,
         bq_conn = google_build(
             'bigquery', 'v2',
             credentials=GoogleCredentials.get_application_default())
-    s3_stream = events_s3(apikey, prefix=s3_prefix, access_key_id=access_key_id,
+    s3_stream = events_s3(network, prefix=s3_prefix, access_key_id=access_key_id,
                           secret_access_key=secret_access_key,
                           region_name=region_name)
 
@@ -203,7 +203,7 @@ def main():
 
     if args.command == "load_batch_bigquery":
         load_batch_bigquery(
-            args.apikey,
+            args.network,
             s3_prefix=args.s3_prefix,
             access_key_id=args.aws_access_key_id,
             secret_access_key=args.aws_secret_access_key,

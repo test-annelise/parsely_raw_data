@@ -24,12 +24,12 @@ limitations under the License.
 """
 
 
-def events_kinesis(apikey, access_key_id="", secret_access_key=""):
+def events_kinesis(network, access_key_id="", secret_access_key=""):
     """Yield a stream of events from a Parse.ly Kinesis Stream
 
-    :param apikey: The Parse.ly apikey for which to perform reads (eg
+    :param network: The Parse.ly network name for which to perform reads (eg
         "blog.parsely.com")
-    :type apikey: str
+    :type network: str
     :param access_key_id: The AWS access key to use when consuming the stream
     :type access_key_id: str
     :param secret_access_key: The AWS secret key to use when consuming the stream
@@ -40,7 +40,7 @@ def events_kinesis(apikey, access_key_id="", secret_access_key=""):
         aws_access_key_id=access_key_id,
         aws_secret_access_key=secret_access_key
     )
-    stream = "parsely_dw_{}".format(apikey)
+    stream = "parsely-dw-{}".format(utils.clean_network(network))
     event_queue = Queue()
 
     def get_events(shard_id):
@@ -102,14 +102,14 @@ def main():
     total_count = 0
     last_update = time.time()
     for event in events_kinesis(
-            args.apikey,
+            args.network,
             access_key_id=args.aws_access_key_id,
             secret_access_key=args.aws_secret_access_key):
         total_count += 1
         if event.action == "pageview":
             url_counts[event.url] += 1
 
-        if total_count % 500 == 0:
+        if total_count % 20 == 0:
             sorted_pairs = sorted(url_counts.iteritems(), key=lambda x: x[1],
                                   reverse=True)
             top_urls = sorted_pairs[:10]

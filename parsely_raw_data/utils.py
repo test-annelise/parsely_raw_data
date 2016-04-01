@@ -23,8 +23,8 @@ def get_default_parser(description, commands=None):
     :type commands: iterable
     """
     parser = argparse.ArgumentParser(description=description)
-    parser.add_argument('--apikey', type=str,
-                        help='The apikey for which to perform the operation')
+    parser.add_argument('--network', type=str,
+                        help='The network for which to perform the operation')
     parser.add_argument('--aws_access_key_id', type=str,
                         help='The AWS access key to use when connecting')
     parser.add_argument('--aws_secret_access_key', type=str,
@@ -39,3 +39,8 @@ def get_default_parser(description, commands=None):
                             help='The operation to perform',
                             choices=commands)
     return parser
+
+
+def clean_network(network):
+    """Format a network name to match AWS resources"""
+    return network.replace(".", "-").replace(" ", "-").lower()
