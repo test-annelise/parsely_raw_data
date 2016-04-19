@@ -7,8 +7,8 @@ import time
 import boto3
 from botocore.exceptions import ClientError, ParamValidationError
 
-from pixel_logs import LogLine
-import utils
+from . import utils
+from .event import Event
 
 __license__ = """
 Copyright 2016 Parsely, Inc.
@@ -66,7 +66,7 @@ def events_kinesis(network, access_key_id="", secret_access_key=""):
                         event_data = json.loads(event_data[4:])
                     except ValueError:
                         continue
-                    event_queue.put(LogLine.from_dict(event_data['payload']))
+                    event_queue.put(Event.from_dict(event_data['payload']))
 
     workers = []
     description = {"HasMoreShards": True}

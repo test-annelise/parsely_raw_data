@@ -6,8 +6,9 @@ import StringIO
 
 import boto3
 
-from pixel_logs import LogLine
-import utils
+from . import utils
+from .event import Event
+
 
 __license__ = """
 Copyright 2016 Parsely, Inc.
@@ -58,7 +59,7 @@ def events_s3(network,
             with gzip.GzipFile(fileobj=StringIO.StringIO(obj.get("Body").read()),
                                mode="rb") as f:
                 for part in [a for a in f.read().split('\n') if a]:
-                    yield LogLine.from_dict(json.loads(part))
+                    yield Event.from_dict(json.loads(part))
 
 
 def main():

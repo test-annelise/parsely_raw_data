@@ -1,21 +1,18 @@
-"""IDL file as Python module."""
-__license__ = """
-Copyright 2016 Parsely, Inc.
+# Copyright 2016 Parsely, Inc.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use this file except in compliance with the License.
-You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
-
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
-"""
-
-IDL = """
 # Thrift IDL files are described in good detail here:
 # http://diwakergupta.github.io/thrift-missing-guide/
 
@@ -52,7 +49,7 @@ struct SessionInfo {
 }
 
 
-struct LogLine {
+struct Event {
     1: required string apikey;
     2: required string url;
     3: optional string referrer;
@@ -65,4 +62,3 @@ struct LogLine {
     10: required TimestampInfo timestamp_info;
     11: optional SessionInfo session;
 }
-"""

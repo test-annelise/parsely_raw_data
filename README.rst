@@ -27,5 +27,5 @@ The files in this module are named for the services they interface with:
 * `bigquery.py`: Write event data to a Google BigQuery table
 
 This repository also contains a Thrift-based abstraction over a Parse.ly event
-called `LogLine`. This class is used to standardize the format of events
+called `Event`. This class is used to standardize the format of events
 passed around between various services.
