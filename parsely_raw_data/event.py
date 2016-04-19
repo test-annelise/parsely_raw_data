@@ -6,7 +6,7 @@ import struct
 import thriftpy
 import thriftpy.protocol.binary as binaryproto
 from pkg_resources import resource_stream
-
+from six import PY3
 
 __license__ = """
 Copyright 2016 Parsely, Inc.
@@ -25,6 +25,8 @@ limitations under the License.
 """
 # Load thrift IDL module
 with resource_stream(__name__, "event.thrift") as thrift_file:
+    if PY3:
+        thrift_file = io.TextIOWrapper(thrift_file, encoding='utf-8')
     event_thrift = thriftpy.load_fp(thrift_file, 'event_thrift')
 
 
