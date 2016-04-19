@@ -30,6 +30,7 @@ def get_version():
                          version_file.read()).group('version')
 
 install_requires = [
+    'six',
     'thriftpy'
 ]
 
