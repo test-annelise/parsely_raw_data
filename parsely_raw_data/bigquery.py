@@ -1,11 +1,15 @@
+from __future__ import absolute_import, print_function
+
 import logging
 import pprint
 
 from googleapiclient.discovery import build as google_build
 from oauth2client.client import GoogleCredentials
+from six import iteritems
 
-from s3 import events_s3
-import utils
+from . import utils
+from .s3 import events_s3
+
 
 __license__ = """
 Copyright 2016 Parsely, Inc.
@@ -35,7 +39,7 @@ def event_to_bigquery(event):
     timestamp_fields = ["session_last_session_timestamp", "session_timestamp",
                         "timestamp_info_nginx_ms", "timestamp_info_override_ms",
                         "timestamp_info_pixel_ms"]
-    for k, v in ret.iteritems():
+    for k, v in iteritems(ret):
         # convert timestamps to seconds
         if v and k in timestamp_fields:
             ret[k] = v / 1000

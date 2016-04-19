@@ -1,6 +1,8 @@
+from __future__ import absolute_import, print_function
+
 import psycopg2
 
-import utils
+from . import utils
 
 __license__ = """
 Copyright 2016 Parsely, Inc.

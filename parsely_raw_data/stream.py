@@ -1,11 +1,14 @@
-from collections import defaultdict
+from __future__ import absolute_import, print_function
+
 import json
-from Queue import Queue, Empty
 import threading
 import time
+from collections import defaultdict
 
 import boto3
 from botocore.exceptions import ClientError, ParamValidationError
+from six import iteritems
+from six.moves.queue import Queue, Empty
 
 from . import utils
 from .event import Event
@@ -110,15 +113,15 @@ def main():
             url_counts[event.url] += 1
 
         if total_count % 20 == 0:
-            sorted_pairs = sorted(url_counts.iteritems(), key=lambda x: x[1],
+            sorted_pairs = sorted(iteritems(url_counts), key=lambda x: x[1],
                                   reverse=True)
             top_urls = sorted_pairs[:10]
             for url, events in top_urls:
                 url_display = url[:70]
                 if len(url) > 70:
                     url_display += "..."
-                print events, url_display
-            print "\n\n"
+                print(events, url_display)
+            print("\n\n")
 
         if time.time() - last_update > TIME_WINDOW_SEC:
             url_counts = defaultdict(int)
