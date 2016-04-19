@@ -4,3 +4,6 @@
 *.egg-info
 *.pyc
 .python-version
+.cache
+build/*
+dist/*
