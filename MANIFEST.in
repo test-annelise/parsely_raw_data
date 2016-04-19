@@ -1,2 +1,2 @@
 include *.txt
-include *.thrift
+include parsely_raw_data/*.thrift

@@ -98,7 +98,6 @@ def run_setup():
         cmdclass={'test': PyTest},
         ext_modules=[],
         dependency_links=dependency_links,
-        zip_safe=False,
         test_suite='nose.collector',
         include_package_data=True,
         classifiers=[
