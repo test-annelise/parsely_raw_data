@@ -1,13 +1,12 @@
 from __future__ import absolute_import, print_function, division
 
 import io
-import logging
 import struct
 
 import thriftpy
 import thriftpy.protocol.binary as binaryproto
-
-from .log_line_idl import IDL
+from pkg_resources import resource_stream
+from six import PY3
 
 __license__ = """
 Copyright 2016 Parsely, Inc.
@@ -25,22 +24,21 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 # Load thrift IDL module
-try:
-    log_line_thrift = thriftpy.load_fp(io.StringIO(IDL), 'log_line_thrift')
-except TypeError:
-    log_line_thrift = thriftpy.load_fp(io.BytesIO(IDL), 'log_line_thrift')
+with resource_stream(__name__, "event.thrift") as thrift_file:
+    if PY3:
+        thrift_file = io.TextIOWrapper(thrift_file, encoding='utf-8')
+    event_thrift = thriftpy.load_fp(thrift_file, 'event_thrift')
 
 
 LINE_DELIMITER = '\x02\n\x03'
-log = logging.getLogger(__name__)
 # Surface some of the classes from the IDL
-VisitorInfo = log_line_thrift.VisitorInfo
-TimestampInfo = log_line_thrift.TimestampInfo
-SessionInfo = log_line_thrift.SessionInfo
-DisplayInfo = log_line_thrift.DisplayInfo
+VisitorInfo = event_thrift.VisitorInfo
+TimestampInfo = event_thrift.TimestampInfo
+SessionInfo = event_thrift.SessionInfo
+DisplayInfo = event_thrift.DisplayInfo
 
 
-class LogLine(log_line_thrift.LogLine):
+class Event(event_thrift.Event):
     def to_binary(self):
         buf = io.BytesIO()
         binaryproto.TBinaryProtocol(buf).write_struct(self)
@@ -54,7 +52,7 @@ class LogLine(log_line_thrift.LogLine):
         return output
 
     def to_dict(self):
-        """Return a LogLine represented as a dictionary."""
+        """Return a Event represented as a dictionary."""
         return {
             'apikey': self.apikey,
             'url': self.url,
@@ -88,7 +86,7 @@ class LogLine(log_line_thrift.LogLine):
 
     @classmethod
     def from_dict(cls, data):
-        """Accepts a dictionary formatted as the output of to_dict, returns a new LogLine
+        """Accepts a dictionary formatted as the output of to_dict, returns a new Event
         """
         display = DisplayInfo(total_width=data.get('display_total_width'),
                               total_height=data.get('display_total_height'),
@@ -121,7 +119,7 @@ class LogLine(log_line_thrift.LogLine):
 
     @classmethod
     def from_binary_file(cls, buff, delimiter=LINE_DELIMITER):
-        """Generate LogLine instances from a file like object."""
+        """Generate Event instances from a file like object."""
         try:
             while True:
                 output = cls()

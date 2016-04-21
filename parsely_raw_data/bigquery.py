@@ -1,11 +1,15 @@
+from __future__ import absolute_import, print_function
+
 import logging
 import pprint
 
 from googleapiclient.discovery import build as google_build
 from oauth2client.client import GoogleCredentials
+from six import iteritems
 
-from s3 import events_s3
-import utils
+from . import utils
+from .s3 import events_s3
+
 
 __license__ = """
 Copyright 2016 Parsely, Inc.
@@ -23,19 +27,19 @@ limitations under the License.
 log = logging.getLogger(__name__)
 
 
-def logline_to_bigquery(logline):
-    """Convert a LogLine instance to a BigQuery-formatted dict
+def event_to_bigquery(event):
+    """Convert a Event instance to a BigQuery-formatted dict
 
     Compatible with the schema implemented by `create_bigquery_table`
 
-    :param logline: The LogLine instance to convert
-    :type logline: pixel_logs.LogLine
+    :param event: The Event instance to convert
+    :type event: pixel_logs.Event
     """
-    ret = logline.to_dict()
+    ret = event.to_dict()
     timestamp_fields = ["session_last_session_timestamp", "session_timestamp",
                         "timestamp_info_nginx_ms", "timestamp_info_override_ms",
                         "timestamp_info_pixel_ms"]
-    for k, v in ret.iteritems():
+    for k, v in iteritems(ret):
         # convert timestamps to seconds
         if v and k in timestamp_fields:
             ret[k] = v / 1000
@@ -62,7 +66,7 @@ def write_events_bigquery(events,
         "kind": "bigquery#tableDataInsertAllRequest",
         "skipInvalidRows": False,
         "ignoreUnknownValues": False,
-        "rows": [logline_to_bigquery(event) for event in events]
+        "rows": [event_to_bigquery(event) for event in events]
     }
     if bq_conn is None:
         pprint.PrettyPrinter(indent=0).pprint(insert_body)

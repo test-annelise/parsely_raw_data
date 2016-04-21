@@ -30,6 +30,7 @@ def get_version():
                          version_file.read()).group('version')
 
 install_requires = [
+    'six',
     'thriftpy'
 ]
 
@@ -84,7 +85,14 @@ def run_setup():
         keywords='parsely s3 kinesis redshift firehose bigquery',
         license='Apache License 2.0',
         packages=find_packages(),
-        entry_points={},
+        entry_points={
+            'console_scripts': [
+                'parsely_bigquery = parsely_raw_data.bigquery:main',
+                'parsely_redshift = parsely_raw_data.redshift:main',
+                'parsely_s3 = parsely_raw_data.s3:main',
+                'parsely_stream = parsely_raw_data.stream:main',
+            ]
+        },
         install_requires=[],
         tests_require=tests_require,
         setup_requires=setup_requires,
@@ -97,7 +105,6 @@ def run_setup():
         cmdclass={'test': PyTest},
         ext_modules=[],
         dependency_links=dependency_links,
-        zip_safe=False,
         test_suite='nose.collector',
         include_package_data=True,
         classifiers=[
@@ -111,7 +118,7 @@ def run_setup():
             "Programming Language :: Python :: 3.4",
             "Programming Language :: Python :: 3.5",
             "Topic :: Software Development :: Libraries :: Python Modules"
-        ]
+        ],
     )
 
 run_setup()

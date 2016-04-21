@@ -1,13 +1,15 @@
-from collections import defaultdict
+from __future__ import absolute_import, print_function
+
 import gzip
 import json
-import logging
-import StringIO
+from collections import defaultdict
+from io import StringIO
 
 import boto3
 
-from pixel_logs import LogLine
-import utils
+from . import utils
+from .event import Event
+
 
 __license__ = """
 Copyright 2016 Parsely, Inc.
@@ -21,7 +23,6 @@ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 See the License for the specific language governing permissions and
 limitations under the License.
 """
-log = logging.getLogger(__name__)
 
 
 def events_s3(network,
@@ -55,10 +56,10 @@ def events_s3(network,
         res = client.list_objects(Bucket=bucket, Prefix=prefix)
         for item in res.get("Contents", []):
             obj = client.get_object(Bucket=bucket, Key=item.get("Key"))
-            with gzip.GzipFile(fileobj=StringIO.StringIO(obj.get("Body").read()),
+            with gzip.GzipFile(fileobj=StringIO(obj.get("Body").read()),
                                mode="rb") as f:
                 for part in [a for a in f.read().split('\n') if a]:
-                    yield LogLine.from_dict(json.loads(part))
+                    yield Event.from_dict(json.loads(part))
 
 
 def main():
@@ -70,7 +71,7 @@ def main():
             access_key_id=args.aws_access_key_id,
             secret_access_key=args.aws_secret_access_key):
         event_counts[event.action] += 1
-    print event_counts
+    print(event_counts)
 
 
 if __name__ == "__main__":
