@@ -26,8 +26,7 @@ class Metadata(object):
     __slots__ = ('authors', 'canonical_url', 'urls', 'page_type', 'post_id',
                  'pub_date_tmsp', 'custom_metadata', 'section', 'tags',
                  'save_date_tmsp', 'thumb_url', 'title', 'image_url',
-                 'full_content_word_count', 'share_urls', 'duration',
-                 '_pub_date', '_save_date')
+                 'full_content_word_count', 'share_urls', 'duration')
     __version__ = 1
 
     def __init__(self, authors, canonical_url, urls, page_type, post_id,
@@ -50,12 +49,10 @@ class Metadata(object):
         self.full_content_word_count = full_content_word_count
         self.share_urls = share_urls
         self.duration = duration
-        self._pub_date = None
-        self._save_date = None
 
 
 class SlotInfo(object):
-    __slots__ = ('xpath', 'url', 'x', 'y', '_cleaned_url')
+    __slots__ = ('xpath', 'url', 'x', 'y')
     __version__ = 1
 
     def __init__(self, xpath, url, x, y):
@@ -63,14 +60,11 @@ class SlotInfo(object):
         self.url = url
         self.x = x
         self.y = y
-        # Set private properties to None or they won't exist
-        self._cleaned_url = None
 
 
 class SessionInfo(object):
     __slots__ = ('id', 'timestamp', 'initial_url', 'initial_referrer',
-                 'last_session_timestamp', '_cleaned_initial_url',
-                 '_cleaned_initial_referrer', '_is_new')
+                 'last_session_timestamp')
     __version__ = 1
 
     def __init__(self, id_, timestamp, initial_url, initial_referrer,
@@ -80,11 +74,6 @@ class SessionInfo(object):
         self.initial_url = initial_url
         self.initial_referrer = initial_referrer
         self.last_session_timestamp = last_session_timestamp
-
-        # Set private properties to None or they won't exist
-        self._cleaned_initial_referrer = None
-        self._cleaned_initial_url = None
-        self._is_new = None
 
 
 class TimestampInfo(object):
@@ -127,11 +116,7 @@ class DisplayInfo(object):
 class Event(object):
     __slots__ = ('apikey', 'url', 'referrer', 'action', 'engaged_time_inc',
                  'visitor', 'extra_data', 'user_agent', 'display',
-                 'timestamp_info', 'session', 'slot', 'metadata', '_timestamp',
-                 '_timestamp_dt', '_timestamp_dt_utc', '_timestamp_day',
-                 '_timestamp_hour', '_timestamp_5min', '_timestamp_5min_str',
-                 '_timestamp_5min_utc', '_cleaned_url', '_cleaned_referrer',
-                 '_content_type', '_action_category')
+                 'timestamp_info', 'session', 'slot', 'metadata')
     __version__ = 1
 
     def __init__(self, apikey, url, referrer, action, engaged_time_inc, visitor,
@@ -150,20 +135,6 @@ class Event(object):
         self.session = session
         self.slot = slot
         self.metadata = metadata
-
-        # Set private properties to None or they won't exist
-        self._timestamp = None
-        self._timestamp_dt = None
-        self._timestamp_dt_utc = None
-        self._timestamp_day = None
-        self._timestamp_hour = None
-        self._timestamp_5min = None
-        self._timestamp_5min_utc = None
-        self._timestamp_5min_str = None
-        self._cleaned_url = None
-        self._cleaned_referrer = None
-        self._content_type = None
-        self._action_category = None
 
     def to_dict(self):
         """Return a Event represented as a dictionary."""
