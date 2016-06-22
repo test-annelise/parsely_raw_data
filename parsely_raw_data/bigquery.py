@@ -36,9 +36,9 @@ def event_to_bigquery(event):
     :type event: pixel_logs.Event
     """
     ret = event.to_dict()
-    timestamp_fields = ["session_last_session_timestamp", "session_timestamp",
-                        "timestamp_info_nginx_ms", "timestamp_info_override_ms",
-                        "timestamp_info_pixel_ms"]
+    timestamp_fields = ["session.last_session_timestamp", "session.timestamp",
+                        "timestamp_info.nginx_ms", "timestamp_info.override_ms",
+                        "timestamp_info.pixel_ms"]
     for k, v in iteritems(ret):
         # convert timestamps to seconds
         if v and k in timestamp_fields:
