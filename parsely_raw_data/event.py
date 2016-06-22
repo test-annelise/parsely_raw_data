@@ -18,7 +18,29 @@ limitations under the License.
 LINE_DELIMITER = '\x02\n\x03'
 
 
-class Metadata(object):
+class SlotsMixin(object):
+    """Mixin to handle __eq__ and __repr__ when using __slots__."""
+    __slots__ = ()  # Needs to be here, or inheriting class will get a __dict__
+
+    def __eq__(self, other):
+        """Compare and return True if all public attributes are equal."""
+        if not isinstance(other, self.__class__):
+            return False
+        return all(getattr(self, p) == getattr(other, p)
+                   for p in self.__slots__
+                   if not p.startswith('_'))
+
+    def __repr__(self):
+        """Basic __repr__ which prints a dict of what's in __slots__."""
+        clsname = self.__class__.__name__
+        vals = ', '.join('{}={!r}'.format(s, getattr(self, s, None))
+                         for s in self.__slots__
+                         if not s.startswith('_'))
+        output = "{}({})".format(clsname, vals)
+        return output
+
+
+class Metadata(SlotsMixin):
     """Class representing in-pixel metadata.
 
     This is implemented using __slots__ to be as efficient as possible.
@@ -51,7 +73,7 @@ class Metadata(object):
         self.duration = duration
 
 
-class SlotInfo(object):
+class SlotInfo(SlotsMixin):
     __slots__ = ('xpath', 'url', 'x', 'y')
     __version__ = 1
 
@@ -62,7 +84,7 @@ class SlotInfo(object):
         self.y = y
 
 
-class SessionInfo(object):
+class SessionInfo(SlotsMixin):
     __slots__ = ('id', 'timestamp', 'initial_url', 'initial_referrer',
                  'last_session_timestamp')
     __version__ = 1
@@ -76,7 +98,7 @@ class SessionInfo(object):
         self.last_session_timestamp = last_session_timestamp
 
 
-class TimestampInfo(object):
+class TimestampInfo(SlotsMixin):
     """Holds timestamp info from an Event."""
     __slots__ = ('nginx_ms', 'pixel_ms', 'override_ms')
     __version__ = 1
@@ -87,7 +109,7 @@ class TimestampInfo(object):
         self.override_ms = override_ms
 
 
-class VisitorInfo(object):
+class VisitorInfo(SlotsMixin):
     """Holds visitor info sent in Event."""
     __slots__ = ('network_id', 'site_id', 'ip')
     __version__ = 1
@@ -98,7 +120,7 @@ class VisitorInfo(object):
         self.ip = ip
 
 
-class DisplayInfo(object):
+class DisplayInfo(SlotsMixin):
     """Holds info about displays from an Event."""
     __slots__ = ('total_width', 'total_height', 'avail_width', 'avail_height',
                  'pixel_depth')
@@ -113,7 +135,7 @@ class DisplayInfo(object):
         self.pixel_depth = pixel_depth
 
 
-class Event(object):
+class Event(SlotsMixin):
     __slots__ = ('apikey', 'url', 'referrer', 'action', 'engaged_time_inc',
                  'visitor', 'extra_data', 'user_agent', 'display',
                  'timestamp_info', 'session', 'slot', 'metadata')
