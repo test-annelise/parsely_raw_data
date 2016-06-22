@@ -66,7 +66,7 @@ def events_kinesis(network, access_key_id="", secret_access_key=""):
                 event_data = record.get("Data")
                 if event_data is not None:
                     try:
-                        event_data = json.loads(event_data[4:])
+                        event_data = json.loads(event_data)
                     except ValueError:
                         continue
                     event_queue.put(Event.from_dict(event_data['payload']))
