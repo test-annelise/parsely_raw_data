@@ -46,9 +46,26 @@ event = Event(
 )
 
 
+def test_to_dict_checker():
+    """Make sure that the length of __slots__ hasn't changed.
+
+    If __slots__ has changed, tell the user to make sure they update
+    `.to_dict` in the offending class. Otherwise, we have no way of
+    making sure the two stay in sync.
+    """
+    msg = "It looks like an object has changed. Please be sure to update to_dict before updating this test to pass."
+    assert len(DisplayInfo.__slots__) == 5, msg
+    assert len(Event.__slots__) == 13, msg
+    assert len(SessionInfo.__slots__) == 5, msg
+    assert len(SlotInfo.__slots__) == 4, msg
+    assert len(TimestampInfo.__slots__) == 3, msg
+    assert len(VisitorInfo.__slots__) == 3, msg
+
+
 def test_dict():
     serded = Event.from_dict(event.to_dict())
     assert serded == event
 
 if __name__ == "__main__":
     test_dict()
+    test_to_dict_checker()
