@@ -33,8 +33,14 @@ class SlotsMixin(object):
     def __repr__(self):
         """Basic __repr__ which prints a dict of what's in __slots__."""
         clsname = self.__class__.__name__
+        # __slots__ is not inherited from the superclass when accessed as self.__slots__
+        # work around this here by manually inspecting the __slots__ or everything
+        # on the MRO
+        mro_slots = [item for slots in
+                     [a.__slots__ for a in type(self).mro() if hasattr(a, "__slots__")]
+                     for item in slots]
         vals = ', '.join('{}={!r}'.format(s, getattr(self, s, None))
-                         for s in self.__slots__
+                         for s in mro_slots
                          if not s.startswith('_'))
         output = "{}({})".format(clsname, vals)
         return output
