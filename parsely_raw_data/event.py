@@ -26,8 +26,14 @@ class SlotsMixin(object):
         """Compare and return True if all public attributes are equal."""
         if not isinstance(other, self.__class__):
             return False
+        # __slots__ is not inherited from the superclass when accessed as self.__slots__
+        # work around this here by manually inspecting the __slots__ or everything
+        # on the MRO
+        mro_slots = [item for slots in
+                     [a.__slots__ for a in type(self).mro() if hasattr(a, "__slots__")]
+                     for item in slots]
         return all(getattr(self, p) == getattr(other, p)
-                   for p in self.__slots__
+                   for p in mro_slots
                    if not p.startswith('_'))
 
     def __repr__(self):
