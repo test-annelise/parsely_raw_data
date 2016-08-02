@@ -32,6 +32,8 @@ class SlotsMixin(object):
         mro_slots = [item for slots in
                      [a.__slots__ for a in type(self).mro() if hasattr(a, "__slots__")]
                      for item in slots]
+        # deduplicate mro slots list
+        mro_slots = list(set(mro_slots))
         return all(getattr(self, p) == getattr(other, p)
                    for p in mro_slots
                    if not p.startswith('_'))
