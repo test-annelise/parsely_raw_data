@@ -22,36 +22,30 @@ class SlotsMixin(object):
     """Mixin to handle __eq__ and __repr__ when using __slots__."""
     __slots__ = ()  # Needs to be here, or inheriting class will get a __dict__
 
+    def _get_inherited_slots(self):
+        """Return a sequence of properties on this object inherited from __slots__"""
+        # __slots__ is not inherited from the superclass when accessed as self.__slots__
+        # work around this here by manually inspecting the __slots__ or everything
+        # on the MRO
+        mro_slots = [item for slots in
+                     [a.__slots__ for a in type(self).mro() if hasattr(a, "__slots__")]
+                     for item in slots]
+        # deduplicate mro slots list
+        mro_slots = list(set(mro_slots))
+        return (p for p in mro_slots if not p.startswith('_'))
+
     def __eq__(self, other):
         """Compare and return True if all public attributes are equal."""
         if not isinstance(other, self.__class__):
             return False
-        # __slots__ is not inherited from the superclass when accessed as self.__slots__
-        # work around this here by manually inspecting the __slots__ or everything
-        # on the MRO
-        mro_slots = [item for slots in
-                     [a.__slots__ for a in type(self).mro() if hasattr(a, "__slots__")]
-                     for item in slots]
-        # deduplicate mro slots list
-        mro_slots = list(set(mro_slots))
         return all(getattr(self, p) == getattr(other, p)
-                   for p in mro_slots
-                   if not p.startswith('_'))
+                   for p in self._get_inherited_slots())
 
     def __repr__(self):
         """Basic __repr__ which prints a dict of what's in __slots__."""
         clsname = self.__class__.__name__
-        # __slots__ is not inherited from the superclass when accessed as self.__slots__
-        # work around this here by manually inspecting the __slots__ or everything
-        # on the MRO
-        mro_slots = [item for slots in
-                     [a.__slots__ for a in type(self).mro() if hasattr(a, "__slots__")]
-                     for item in slots]
-        # deduplicate mro slots list
-        mro_slots = list(set(mro_slots))
         vals = ', '.join('{}={!r}'.format(s, getattr(self, s, None))
-                         for s in mro_slots
-                         if not s.startswith('_'))
+                         for s in self._get_inherited_slots())
         output = "{}({})".format(clsname, vals)
         return output
 
