@@ -69,3 +69,36 @@ def test_dict():
 if __name__ == "__main__":
     test_dict()
     test_to_dict_checker()
+
+
+def test_missing_extra():
+    """Ensure we still have extra after to_dict and from_dict."""
+    extra_data = {'important': 'No throwing away!'}
+    event = Event(apikey='example.com',
+                  url='http://www.example.com/',
+                  referrer='http://www.example.com/article-123',
+                  action='pageview',
+                  engaged_time_inc=None,
+                  extra_data=extra_data,
+                  visitor=VisitorInfo(site_id='e71604df-a912-455d-aaf3-a9c72a6dd86c',
+                                      network_id='',
+                                      ip='184.149.39.120'),
+                  user_agent='Mozilla/5.0 (Macintosh; Intel Mac OS X 10_10_5) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/52.0.2743.116 Safari/537.36',
+                  display=DisplayInfo(1440,
+                                      900,
+                                      1436,
+                                      877,
+                                      24),
+                  timestamp_info=TimestampInfo(nginx_ms=1429707722000,
+                                               pixel_ms=None,
+                                               override_ms=None),
+                  session=SessionInfo(5,
+                                      1471428000000,
+                                      'http://www.example.com/',
+                                      'https://www.google.ca/',
+                                      1470045600000),
+                  slot=None,
+                  metadata=None)
+
+    other = Event.from_dict(event.to_dict())
+    assert other.extra_data == extra_data
