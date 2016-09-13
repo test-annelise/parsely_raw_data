@@ -318,7 +318,7 @@ class Event(SlotsMixin):
                    data.get('action'),
                    data.get('engaged_time_inc'),
                    visitor,
-                   data.get('data'),
+                   data.get('extra_data'),
                    data.get('user_agent'),
                    display,
                    timestamp_info,
