@@ -30,9 +30,14 @@ class SlotsMixin(object):
         mro_slots = [item for slots in
                      [a.__slots__ for a in type(self).mro() if hasattr(a, "__slots__")]
                      for item in slots]
-        # deduplicate mro slots list
-        mro_slots = list(set(mro_slots))
-        return (p for p in mro_slots if not p.startswith('_'))
+        seen = set()
+        deduplicated_slots = []
+        for item in mro_slots:
+            if item in seen:
+                continue
+            seen.add(item)
+            deduplicated_slots.append(item)
+        return (p for p in deduplicated_slots if not p.startswith('_'))
 
     def __eq__(self, other):
         """Compare and return True if all public attributes are equal."""
