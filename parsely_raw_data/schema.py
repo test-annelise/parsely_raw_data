@@ -1,5 +1,22 @@
 from __future__ import print_function
 
+import json
+
+from tabulate import tabulate
+
+"""
+Data Pipeline event schema DSL has this form:
+
+    {"key": "action",     # key or column
+     "ex": "pageview",    # example value
+     "type": str,         # 'abstract' type
+     "size": 256,         # rough size/length of field
+     "req": True}         # is the field required?
+
+Those are listed below, and then a number of functions
+export these to example record formats, BigQuery/Redshift DDLs,
+and documentation in Markdown format.
+"""
 SCHEMA = [
     {"key": "action", "ex": "pageview", "type": str, "size": 256, "req": True},
     {"key": "apikey", "ex": "mashable.com", "type": str, "size": 256, "req": True},
@@ -35,7 +52,7 @@ SCHEMA = [
     {"key": "metadata_tags", "ex": ["gadgets", "iphone-7"], "type": list},
     {"key": "metadata_thumb_url", "ex": "https://images.parsely.com/xY9xNBMulGDKRMzfKaUQzs7A9PA=/160x160/smart/http%3A//a.amz.mshcdn.com/media/ZgkyMDE2LzA5LzA3LzU2L0NyeFhpNjNYRUFBSnZwRS5lNDAyMy5qcGcKcAl0aHVtYgkxMjAweDYzMAplCWpwZw/156d0173/3ae/CrxXi63XEAAJvpE.jpg", "type": str},
     {"key": "metadata_title", "ex": "Everyone has the same fear about Apple's new earbuds", "type": str},
-    {"key": "metadata_urls", "ex": ["http://mashable.com/2016/09/07/airpods-jokes/"], "type": str},
+    {"key": "metadata_urls", "ex": ["http://mashable.com/2016/09/07/airpods-jokes/"], "type": list},
     {"key": "ref_category", "ex": "internal", "type": str, "size": 64},
     {"key": "ref_clean", "ex": "http://mashable.com/", "type": str},
     {"key": "ref_domain", "ex": "mashable.com", "type": str, "size": 256},
@@ -104,10 +121,6 @@ SCHEMA = [
 ]
 
 
-import json
-from tabulate import tabulate
-
-
 def mk_sample_event():
     sample = {}
     for record in SCHEMA:
@@ -126,7 +139,7 @@ def mk_bigquery_table():
             int: "INTEGER",
             float: "FLOAT",
             bool: "BOOLEAN",
-            object: "RECORD",
+            object: "JSON",
             list: "STRING (REPEATED)"
         }
         type_ = types2str[record["type"]]
@@ -143,8 +156,8 @@ def mk_bigquery_schema():
     jsonlines = []
     for row in table:
         key, _, type_ = row
-        if type_ == "RECORD":
-            # skip record types since it requires additional
+        if type_ == "JSON":
+            # skip json types since it requires additional
             # modelling from the user
             continue
         if "REPEATED" in type_:
@@ -201,7 +214,7 @@ def mk_redshift_table():
             int: "INTEGER",
             float: "FLOAT",
             bool: "BOOLEAN",
-            object: "VARCHAR(MAX)",
+            object: "JSON",
             list: "VARCHAR(MAX)"
         }
         type_ = types2str[record["type"]]
@@ -214,7 +227,7 @@ def mk_redshift_table():
         if record.get("date", False) and key.startswith("ts_"):
             type_ = "TIMESTAMP"
         if record.get("req", False):
-            type_ = type_ + "*"
+            type_ = type_ + " NOT NULL"
         table.append([key, example, type_])
     return table, headers
 
@@ -223,11 +236,13 @@ def mk_redshift_schema():
     table, headers = mk_redshift_table()
     ddl = []
     # open
-    ddl.append("CREATE TABLE rawdata (")
+    ddl.append("CREATE TABLE parsely.rawdata (")
     for row in table:
         key, _, type_ = row
-        if "*" in type_:
-            type_ = type_.replace("*", "") + " NOT NULL"
+        if type_ == "JSON":
+            # skip JSON type since we can't do anything with it
+            # without additional ETL steps
+            continue
         # each line of DDL with key/type
         ddl.append("{:8}{:35} {:25}".format(" ", key, type_ + ","))
     # strip trailing comma

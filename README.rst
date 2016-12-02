@@ -4,28 +4,48 @@
 Parse.ly Raw Data
 =================
 
-This repository contains Python example code for working with Parse.ly's
-"raw data API". This "API" comprises a collection of AWS tools that Parse.ly
-customers can use to gain batch and streaming access to the raw data that Parse.ly
-collects from their sites. Streaming access is provided via Amazon Kinesis Streams,
-and batch access via Amazon S3.
+This repository contains Python example code for working with raw data delivered
+by Parse.ly's fully-managed Data Pipeline product, at http://parse.ly/data-pipeline.
 
-To set up Raw Data API access for your Parse.ly account, please contact
-Parse.ly support.
+This Python repository is a suite of tools, mostly usable from the command-line,
+which make it easy to evaluate and integrate the Parse.ly raw data.
 
-You can download this repository with
+Customers can use this repository to:
+
+* gain batch and streaming access to the raw data that Parse.ly
+  collects from their sites; streaming access is provided via Amazon Kinesis Streams,
+  and batch access via Amazon S3
+
+* generate schemas and DDL for common data warehousing tools, such as Redshift,
+  BigQuery, and Apache Spark
+
+* create data samples that can be evaluated using in-memory analyst tools such
+  as Excel or R Studio (xlsx/csv samples)
+
+To make use of Parse.ly raw data, you must be a customer of Parse.ly's Data Pipeline
+product. To gain access for your Parse.ly account, please contact Parse.ly directly
+at http://help.parsely.com.
+
+You can download this repository by cloning it from Github, e.g.
 
 ::
+    $ git clone https://github.com/Parsely/parsely_raw_data.git
 
+Or, you can install it into an environment with `pip`, e.g.
+
+::
     $ pip install parsely_raw_data
 
-The files in this module are named for the services they interface with:
+The files in this module are named for the services they interface with. You can simply
+run modules to use command-line tools provided, or import the modules to script
+them yourselves using your own Python scripts.
 
-* `s3.py`: Fetch event data from a Parse.ly-managed S3 bucket
-* `stream.py`: Consume a Kinesis Stream of realtime Parse.ly event data
-* `redshift.py`: Copy data from S3 to an Amazon Redshift instance
-* `bigquery.py`: Write event data to a Google BigQuery table
+Module and CLI Guide
+~~~~~~~~~~~~~~~~~~~~
 
-This repository also contains a Thrift-based abstraction over a Parse.ly event
-called `Event`. This class is used to standardize the format of events
-passed around between various services.
+* `python -m parsely_raw_data.samples`: Generate data samples in CSV and XLSX format
+* `python -m parsely_raw_data.s3`: Fetch event data from a Parse.ly-managed S3 bucket
+* `python -m parsely_raw_data.kinesis`: Consume a Kinesis Stream of realtime Parse.ly event data
+* `python -m parsely_raw_data.schema`: Generates schemas for Redshift, BigQuery, and Spark
+* `python -m parsely_raw_data.redshift`: Copy JSON data from S3 to an Amazon Redshift instance
+* `python -m parsely_raw_data.bigquery`: Copy JSON event data to a Google BigQuery table
