@@ -31,7 +31,6 @@ def get_version():
 
 install_requires = [
     'six',
-    'thriftpy'
 ]
 
 lint_requires = [
