@@ -29,11 +29,13 @@ at http://help.parsely.com.
 You can download this repository by cloning it from Github, e.g.
 
 ::
+
     $ git clone https://github.com/Parsely/parsely_raw_data.git
 
 Or, you can install it into an environment with `pip`, e.g.
 
 ::
+
     $ pip install parsely_raw_data
 
 The files in this module are named for the services they interface with. You can simply
@@ -44,8 +46,8 @@ Module and CLI Guide
 ~~~~~~~~~~~~~~~~~~~~
 
 * `python -m parsely_raw_data.samples`: Generate data samples in CSV and XLSX format
-* `python -m parsely_raw_data.s3`: Fetch event data from a Parse.ly-managed S3 bucket
-* `python -m parsely_raw_data.kinesis`: Consume a Kinesis Stream of realtime Parse.ly event data
-* `python -m parsely_raw_data.schema`: Generates schemas for Redshift, BigQuery, and Spark
-* `python -m parsely_raw_data.redshift`: Copy JSON data from S3 to an Amazon Redshift instance
-* `python -m parsely_raw_data.bigquery`: Copy JSON event data to a Google BigQuery table
+* `python -m parsely_raw_data.s3`: Fetch archived event data from Parse.ly S3 Bucket
+* `python -m parsely_raw_data.kinesis`: Consume a Parse.ly Kinesis Stream of real-time event data
+* `python -m parsely_raw_data.schema`: Inspect schemas for Redshift, BigQuery, and Spark
+* `python -m parsely_raw_data.redshift`: Create an Amazon Redshift table for events and load data
+* `python -m parsely_raw_data.bigquery`: Create a Google BigQuery table for events and load data
