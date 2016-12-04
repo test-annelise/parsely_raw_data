@@ -9,7 +9,7 @@ from six import iteritems
 
 from . import utils
 from .s3 import events_s3
-from .schema import mk_bigquery_table
+from .schema import mk_bigquery_schema
 
 
 __license__ = """
@@ -129,7 +129,7 @@ def create_table(project_id, table_id, dataset_id, debug=False):
     :param dataset_id: The BigQuery dataset ID to write to
     :type dataset_id: str
     """
-    fields = mk_bigquery_table()
+    fields = mk_bigquery_schema()
     schema = {
         "description": "Parse.ly Data Pipeline",
         "schema": {"fields": fields},

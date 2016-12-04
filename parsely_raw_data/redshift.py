@@ -1,6 +1,6 @@
 from __future__ import absolute_import, print_function
 
-from .schema import mk_redshift_table
+from .schema import mk_redshift_schema
 
 import psycopg2
 
