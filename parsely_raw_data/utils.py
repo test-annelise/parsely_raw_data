@@ -34,10 +34,10 @@ def get_default_parser(description, commands=None):
     parser.add_argument('--aws_region_name', type=str,
                         help='The AWS region to which to connect')
     parser.add_argument('--s3_prefix', type=str,
-                        help='The date prefix to use when copying from S3, formatted as'
+                        help='The date prefix to use when copying from S3, formatted as '
                              'YYYY/MM/DD')
     if commands is not None:
-        parser.add_argument('--command', type=str,
+        parser.add_argument('command', type=str,
                             help='The operation to perform',
                             choices=commands)
     return parser

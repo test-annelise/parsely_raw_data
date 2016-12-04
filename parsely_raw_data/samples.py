@@ -24,13 +24,12 @@ def gen_json2csv(jsonlines):
             row.append(cell)
         yield row
 
-SAMPLE_SIZE_IN_ROWS = 50000
 
-def make_sample_dataset(jsonlines):
+def make_sample_dataset(jsonlines, row_limit=50000):
     lines = []
-    # take first 50k jsonlines
+    # take up to row limit
     for i, line in enumerate(jsonlines):
-        if i > SAMPLE_SIZE_IN_ROWS:
+        if i > row_limit:
             break
         jsonline = json.loads(line)
         lines.append(jsonline)
@@ -44,6 +43,10 @@ def make_sample_dataset(jsonlines):
             body.append(line)
     data = tablib.Dataset(*body, headers=headers)
     return data
+
+
+def make_csv(rows):
+    return rows.csv
 
 
 def make_xlsx(rows):
@@ -61,7 +64,49 @@ def make_xlsx(rows):
     return contents
 
 
+def main():
+    import argparse
+    import gzip
+
+    parser = argparse.ArgumentParser(
+        description="Utilities to make explorable data samples from Parse.ly raw data")
+    parser.add_argument("--json_input", type=str, required=True,
+                        help="The path to JSONLine data (.json.gz or flat .json)")
+    parser.add_argument("--output", type=str, required=True,
+                        help="The path of where to write data sample (.csv or .xlsx)")
+    parser.add_argument("--row_limit", type=int, default=50000,
+                        help="The maximum number of rows to output")
+    args = parser.parse_args()
+
+    json_input = args.json_input
+    output = args.output
+    row_limit = args.row_limit
+    print(row_limit)
+    if output.endswith(".csv"):
+        open_spec = (output, "w")
+        converter = make_csv
+    elif output.endswith(".xlsx"):
+        open_spec = (output, "wb")
+        converter = make_xlsx
+    else:
+        print("Your --output must end with '.csv' or '.xlsx'")
+        return
+    with open(*open_spec) as out_file:
+        if json_input.endswith(".gz"):
+            jsonlines = gzip.GzipFile(json_input)
+        else:
+            jsonlines = open(json_input)
+        data = make_sample_dataset(jsonlines, row_limit=row_limit)
+        out_file.write(converter(data))
+
+
 if __name__ == "__main__":
+    main()
+
+
+def _selftest():
+    """TODO: this self-test was written to build the module, but should now
+    be moved to a unit test."""
     import csv
     print("CSV file self-test...")
     tmp_path = tempfile.mktemp()
@@ -77,14 +122,4 @@ if __name__ == "__main__":
     for i, line in enumerate(open(tmp_path).readlines()):
         print(line[:80])
     os.remove(tmp_path)
-    print("Done.")
-
-    print("Generating CSV and XLSX sample from sample.json.gz...")
-    import gzip
-    with open("sample.csv", "w") as csv_file, \
-         open("sample.xlsx", "wb") as xlsx_file:
-        jsonlines = gzip.GzipFile("sample.json.gz")
-        data = make_sample_dataset(jsonlines)
-        csv_file.write(data.csv)
-        xlsx_file.write(make_xlsx(data))
     print("Done.")

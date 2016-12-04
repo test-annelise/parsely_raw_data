@@ -9,6 +9,7 @@ from six import iteritems
 
 from . import utils
 from .s3 import events_s3
+from .schema import mk_bigquery_table
 
 
 __license__ = """
@@ -27,30 +28,11 @@ limitations under the License.
 log = logging.getLogger(__name__)
 
 
-def event_to_bigquery(event):
-    """Convert a Event instance to a BigQuery-formatted dict
-
-    Compatible with the schema implemented by `create_bigquery_table`
-
-    :param event: The Event instance to convert
-    :type event: pixel_logs.Event
-    """
-    ret = event.to_dict()
-    timestamp_fields = ["session.last_session_timestamp", "session.timestamp",
-                        "timestamp_info.nginx_ms", "timestamp_info.override_ms",
-                        "timestamp_info.pixel_ms"]
-    for k, v in iteritems(ret):
-        # convert timestamps to seconds
-        if v and k in timestamp_fields:
-            ret[k] = v / 1000
-    return {"json": ret}
-
-
-def write_events_bigquery(events,
-                          bq_conn=None,
-                          project_id=None,
-                          dataset_id=None,
-                          table_id=None):
+def streaming_insert_bigquery(jsonlines,
+                              bq_conn=None,
+                              project_id=None,
+                              dataset_id=None,
+                              table_id=None):
     """Write a stream of events to BigQuery
 
     :param bq_conn: The BigQuery connection to write to
@@ -66,7 +48,7 @@ def write_events_bigquery(events,
         "kind": "bigquery#tableDataInsertAllRequest",
         "skipInvalidRows": False,
         "ignoreUnknownValues": False,
-        "rows": [event_to_bigquery(event) for event in events]
+        "rows": [jsonline for jsonline in jsonlines]
     }
     if bq_conn is None:
         pprint.PrettyPrinter(indent=0).pprint(insert_body)
@@ -84,16 +66,16 @@ def write_events_bigquery(events,
     return True
 
 
-def load_batch_bigquery(network,
-                        s3_prefix="",
-                        access_key_id="",
-                        secret_access_key="",
-                        region_name="us-east-1",
-                        project_id=None,
-                        dataset_id=None,
-                        table_id=None,
-                        dry_run=False):
-    """Load a batch of events from S3 to BigQuery
+def copy_from_s3(network,
+                 s3_prefix="",
+                 access_key_id="",
+                 secret_access_key="",
+                 region_name="us-east-1",
+                 project_id=None,
+                 dataset_id=None,
+                 table_id=None,
+                 dry_run=False):
+    """Load events from S3 to BigQuery using the BQ streaming insert API.
 
     :param network: The Parse.ly network for which to perform writes (eg
         "parsely-blog")
@@ -137,7 +119,7 @@ def load_batch_bigquery(network,
                               dataset_id=dataset_id, table_id=table_id)
 
 
-def create_bigquery_table(project_id, table_id, dataset_id):
+def create_table(project_id, table_id, dataset_id, debug=False):
     """Create a BigQuery table using a schema compatible with Parse.ly events
 
     :param project_id: The BigQuery project ID to write to
@@ -147,41 +129,19 @@ def create_bigquery_table(project_id, table_id, dataset_id):
     :param dataset_id: The BigQuery dataset ID to write to
     :type dataset_id: str
     """
+    fields = mk_bigquery_table()
     schema = {
-        "description": "Parse.ly event data",
-        "schema": {"fields": [
-            {"name": "url", "mode": "REQUIRED", "type": "STRING"},
-            {"name": "apikey", "mode": "REQUIRED", "type": "STRING"},
-            {"name": "action", "mode": "NULLABLE", "type": "STRING"},
-            {"name": "display_avail_height", "mode": "NULLABLE", "type": "INTEGER"},
-            {"name": "display_avail_width", "mode": "NULLABLE", "type": "INTEGER"},
-            {"name": "display_pixel_depth", "mode": "NULLABLE", "type": "INTEGER"},
-            {"name": "display_total_height", "mode": "NULLABLE", "type": "INTEGER"},
-            {"name": "display_total_width", "mode": "NULLABLE", "type": "INTEGER"},
-            {"name": "engaged_time_inc", "mode": "NULLABLE", "type": "INTEGER"},
-            {"name": "extra_data", "mode": "NULLABLE", "type": "STRING"},
-            {"name": "referrer", "mode": "NULLABLE", "type": "STRING"},
-            {"name": "session_id", "mode": "NULLABLE", "type": "STRING"},
-            {"name": "session_initial_referrer", "mode": "NULLABLE", "type": "STRING"},
-            {"name": "session_initial_url", "mode": "NULLABLE", "type": "STRING"},
-            {"name": "session_last_session_timestamp", "mode": "NULLABLE",
-                "type": "TIMESTAMP"},
-            {"name": "session_timestamp", "mode": "NULLABLE", "type": "TIMESTAMP"},
-            {"name": "timestamp_info_nginx_ms", "mode": "NULLABLE", "type": "TIMESTAMP"},
-            {"name": "timestamp_info_override_ms", "mode": "NULLABLE",
-                "type": "TIMESTAMP"},
-            {"name": "timestamp_info_pixel_ms", "mode": "NULLABLE", "type": "TIMESTAMP"},
-            {"name": "user_agent", "mode": "NULLABLE", "type": "STRING"},
-            {"name": "visitor_ip", "mode": "NULLABLE", "type": "STRING"},
-            {"name": "visitor_network_id", "mode": "NULLABLE", "type": "STRING"},
-            {"name": "visitor_site_id", "mode": "NULLABLE", "type": "STRING"}
-        ]},
+        "description": "Parse.ly Data Pipeline",
+        "schema": {"fields": fields},
         "tableReference": {
             "projectId": project_id,
             "tableId": table_id,
             "datasetId": dataset_id
         }
     }
+    if debug:
+        print("Running the following BigQuery JSON table insert:")
+        print(json.dumps(schema, indent=4, sort_keys=True))
     credentials = GoogleCredentials.get_application_default()
     bigquery = google_build('bigquery', 'v2', credentials=credentials)
     bigquery.tables().insert(projectId=project_id,
@@ -191,22 +151,22 @@ def create_bigquery_table(project_id, table_id, dataset_id):
 
 
 def main():
-    commands = ["load_batch_bigquery", "create_bigquery_table"]
+    commands = ["copy_from_s3", "create_table"]
     parser = utils.get_default_parser("Google BigQuery utilities for Parse.ly",
                                       commands=commands)
     parser.add_argument('--dry_run', action="store_true",
                         help="If true, don't perform writes to Bigquery"
                              'connect, ending in "redshift.amazonaws.com"')
-    parser.add_argument('bigquery_project_id', type=str,
+    parser.add_argument('--bigquery_project_id', type=str,
                         help='The ID of the BigQuery project to which to connect')
-    parser.add_argument('bigquery_dataset_id', type=str,
+    parser.add_argument('--bigquery_dataset_id', type=str,
                         help='The ID of the BigQuery dataset to which to connect')
-    parser.add_argument('bigquery_table_id', type=str,
+    parser.add_argument('--bigquery_table_id', type=str,
                         help='The ID of the BigQuery table to which to connect')
     args = parser.parse_args()
 
-    if args.command == "load_batch_bigquery":
-        load_batch_bigquery(
+    if args.command == "copy_from_s3":
+        copy_from_s3(
             args.network,
             s3_prefix=args.s3_prefix,
             access_key_id=args.aws_access_key_id,
@@ -217,8 +177,8 @@ def main():
             table_id=args.bigquery_table_id,
             dry_run=args.dry_run
         )
-    elif args.command == "create_bigquery_table":
-        create_bigquery_table(
+    elif args.command == "create_table":
+        create_table(
             project_id=args.project_id,
             dataset_id=args.dataset_id,
             table_id=args.table_id
