@@ -280,44 +280,7 @@ def mk_markdown_table(prefix=None):
     return table, headers
 
 
-def jsonprint(obj):
-    print(json.dumps(obj, indent=4, sort_keys=True))
-
-
-def tableprint(table, headers):
-    print(tabulate(table, headers, tablefmt="pipe"))
-
-def br():
-    print()
-
-
 if __name__ == "__main__":
-    print("## Sample Event")
-    br()
-    print("```javascript")
-    jsonprint(mk_sample_event())
-    print("```")
-    br()
-    print("## Schema Overview")
-    br()
-    tableprint(*mk_markdown_table())
-    br()
-    print("## BigQuery Schema")
-    br()
-    tableprint(*mk_bigquery_table())
-    br()
-    print("## BigQuery DDL")
-    br()
-    print("```javascript")
-    jsonprint(mk_bigquery_schema())
-    print("```")
-    br()
-    print("## Redshift Schema")
-    br()
-    tableprint(*mk_redshift_table())
-    br()
-    print("## Redshift DDL")
-    br()
-    print("```sql")
-    print(mk_redshift_schema())
-    print("```")
+    # TODO: CLI for just showing the various DDLs
+    from .docgen import main
+    main()
