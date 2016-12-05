@@ -36,6 +36,8 @@ def get_default_parser(description, commands=None):
     parser.add_argument('--s3_prefix', type=str,
                         help='The date prefix to use when copying from S3, formatted as '
                              'YYYY/MM/DD')
+    parser.add_argument('--debug', action='store_true',
+                        help='Turn on debug mode to log output and commands')
     if commands is not None:
         parser.add_argument('command', type=str,
                             help='The operation to perform',

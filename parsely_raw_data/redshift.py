@@ -43,7 +43,7 @@ def create_table(table_name="rawdata",
     :type port: str
     """
     query = mk_redshift_schema()
-    query = query.replace("parsely.rawdata", table_name)
+    query = query.replace(u"parsely.rawdata", table_name)
     if debug:
         print("Running the following Redshift CREATE TABLE command:")
         print(query)
@@ -112,7 +112,7 @@ def main():
     commands = ['copy_from_s3', 'create_table']
     parser = utils.get_default_parser("Amazon Redshift utilities for Parse.ly",
                                       commands=commands)
-    parser.add_argument("--table_name", type=str,
+    parser.add_argument("--table_name", type=str, default="rawdata",
                         help="The name of the Redshift table to create/copy")
     parser.add_argument('--redshift_host', type=str,
                         help='The host string of the Redshift instance to which to '
@@ -123,9 +123,9 @@ def main():
     parser.add_argument('--redshift_password', type=str,
                         help='The password to use when connecting to the Redshift'
                              ' instance')
-    parser.add_argument('--redshift_database', type=str,
+    parser.add_argument('--redshift_database', type=str, default="parsely",
                         help='The Redshift database to which to connect')
-    parser.add_argument('--redshift_port', type=str,
+    parser.add_argument('--redshift_port', type=str, default="5439",
                         help='The port on which to connect to Redshift')
     args = parser.parse_args()
 
@@ -139,7 +139,8 @@ def main():
             password=args.redshift_password,
             database=args.redshift_database,
             access_key_id=args.aws_access_key_id,
-            secret_access_key=args.aws_secret_access_key
+            secret_access_key=args.aws_secret_access_key,
+            debug=args.debug
         )
     elif args.command == "create_table":
         create_table(
@@ -148,7 +149,8 @@ def main():
             user=args.redshift_user,
             password=args.redshift_password,
             database=args.redshift_database,
-            port=args.redshift_port
+            port=args.redshift_port,
+            debug=args.debug
         )
 
 if __name__ == "__main__":
