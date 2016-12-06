@@ -339,7 +339,7 @@ class Event(SlotsMixin):
                                 data.get('metadata.duration'))
         else:
             metadata = None
-        if data.get('metadata'):
+        if data.get('campaign'):
             campaign = CampaignInfo(data.get('campaign.id'),
                                     data.get('campaign.medium'),
                                     data.get('campaign.source'),
