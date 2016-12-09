@@ -81,7 +81,6 @@ def main():
     json_input = args.json_input
     output = args.output
     row_limit = args.row_limit
-    print(row_limit)
     if output.endswith(".csv"):
         open_spec = (output, "w")
         converter = make_csv
