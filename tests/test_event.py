@@ -1,6 +1,6 @@
 from parsely_raw_data.event import (Event, VisitorInfo, TimestampInfo,
                                     DisplayInfo, SessionInfo, SlotInfo,
-                                    Metadata, CampaignInfo)
+                                    Metadata, CampaignInfo, EventFlags)
 
 
 event = Event(
@@ -45,6 +45,7 @@ event = Event(
         69
     ),
     CampaignInfo('spring_sale', 'email', 'newsletter', 'logolink', 'foo'),
+    EventFlags(False),
 )
 
 def test_to_dict_checker():
@@ -56,13 +57,14 @@ def test_to_dict_checker():
     """
     msg = "It looks like an object has changed. Please be sure to update to_dict before updating this test to pass."
     assert len(DisplayInfo.__slots__) == 5, msg
-    assert len(Event.__slots__) == 14, msg
+    assert len(Event.__slots__) == 15, msg
     assert len(SessionInfo.__slots__) == 5, msg
     assert len(SlotInfo.__slots__) == 4, msg
     assert len(TimestampInfo.__slots__) == 3, msg
     assert len(VisitorInfo.__slots__) == 3, msg
     assert len(Metadata.__slots__) == 16, msg
     assert len(CampaignInfo.__slots__) == 5, msg
+    assert len(EventFlags.__slots__) == 1, msg
 
 
 def test_dict():
@@ -98,7 +100,8 @@ def test_missing_extra():
                                       1470045600000),
                   slot=None,
                   metadata=None,
-                  campaign=None)
+                  campaign=None,
+                  flags=None)
 
     other = Event.from_dict(event.to_dict())
     assert other.extra_data == extra_data

@@ -55,6 +55,25 @@ class SlotsMixin(object):
         return output
 
 
+class EventFlags(SlotsMixin):
+    """Class representing flags for an event.
+
+    Flags are meant to be information that comes across in the raw
+    event that would otherwise be lost after parsing. For example,
+    AMP events have `ampid` on the request URL. This is used to populate
+    the site id, and then the name `ampid` is discarded. To track AMP
+    events, we use the `is_amp` flag.
+
+    This should not be used for information that otherwise exists on an
+    event. For example, `is_mobile` would be bad, since that can already
+    be determined by looking at the User-Agent.
+    """
+    __slots__ = ('is_amp',)
+    __version__ = 1
+
+    def __init__(self, is_amp):
+        self.is_amp = is_amp
+
 class Metadata(SlotsMixin):
     """Class representing in-pixel metadata.
 
@@ -166,12 +185,13 @@ class CampaignInfo(SlotsMixin):
 class Event(SlotsMixin):
     __slots__ = ('apikey', 'url', 'referrer', 'action', 'engaged_time_inc',
                  'visitor', 'extra_data', 'user_agent', 'display',
-                 'timestamp_info', 'session', 'slot', 'metadata', 'campaign')
+                 'timestamp_info', 'session', 'slot', 'metadata', 'campaign',
+                 'flags')
     __version__ = 1
 
     def __init__(self, apikey, url, referrer, action, engaged_time_inc, visitor,
                  extra_data, user_agent, display, timestamp_info, session, slot,
-                 metadata, campaign):
+                 metadata, campaign, flags):
         self.apikey = apikey
         self.url = url
         self.referrer = referrer
@@ -186,6 +206,7 @@ class Event(SlotsMixin):
         self.slot = slot
         self.metadata = metadata
         self.campaign = campaign
+        self.flags = flags
 
     def to_dict(self):
         """Return a Event represented as a dictionary."""
@@ -277,6 +298,12 @@ class Event(SlotsMixin):
             event_dict['campaign.__version__'] = self.campaign.__version__
         else:
             event_dict['campaign'] = False
+        if self.flags:
+            event_dict['flags'] = True
+            event_dict['flags.is_amp'] = self.flags.is_amp
+            event_dict['flags.__version__'] = self.flags.__version__
+        else:
+            event_dict['flags'] = False
         event_dict['version'] = self.__version__
         return event_dict
 
@@ -347,6 +374,10 @@ class Event(SlotsMixin):
                                     data.get('campaign.term'))
         else:
             campaign = None
+        if data.get('flags'):
+            flags = EventFlags(data.get('flags.is_amp', False))
+        else:
+            flags = None
         return cls(data.get('apikey'),
                    data.get('url'),
                    data.get('referrer'),
@@ -360,4 +391,5 @@ class Event(SlotsMixin):
                    session,
                    slot,
                    metadata,
-                   campaign)
+                   campaign,
+                   flags)
