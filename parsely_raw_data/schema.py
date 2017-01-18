@@ -34,7 +34,7 @@ SCHEMA = [
     {"key": "ip_lat", "ex": 37.5147, "type": float},
     {"key": "ip_lon", "ex": -122.0423, "type": float},
     {"key": "ip_postal", "ex": "94560", "type": str, "size": 64},
-    {"key": "ip_subdivision", "ex": "CA", "type": str, "size": 2},
+    {"key": "ip_subdivision", "ex": "CA", "type": str, "size": 3},
     {"key": "ip_timezone", "ex": "America/Los_Angeles", "type": str, "size": 256},
     {"key": "metadata", "ex": True, "type": bool},
     {"key": "metadata_authors", "ex": ["Laura Vitto"], "type": list},
