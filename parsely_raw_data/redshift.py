@@ -89,12 +89,14 @@ def copy_from_s3(network,
     :param secret_access_key: The AWS secret key to use when copying
     :type secret_access_key: str
     """
-    query = ""
+    query = (
     "COPY {table_name}\n"
     "FROM 's3://parsely-dw-{network}/{s3_prefix}'\n"
     "CREDENTIALS 'aws_access_key_id={aws_access_key_id};"
     "aws_secret_access_key={aws_secret_access_key}'\n"
-    "JSON AS 'auto' GZIP;".format(
+    "JSON AS 'auto' GZIP;"
+	).format(
+	table_name=table_name,
         network=utils.clean_network(network),
         s3_prefix=s3_prefix,
         aws_access_key_id=access_key_id,
