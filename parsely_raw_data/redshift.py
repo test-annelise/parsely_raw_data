@@ -94,7 +94,8 @@ def copy_from_s3(network,
     "FROM 's3://parsely-dw-{network}/{s3_prefix}'\n"
     "CREDENTIALS 'aws_access_key_id={aws_access_key_id};"
     "aws_secret_access_key={aws_secret_access_key}'\n"
-    "JSON AS 'auto' GZIP;"
+    "JSON AS 'auto' GZIP\n"
+    "TRUNCATECOLUMNS;\n"
 	).format(
 	table_name=table_name,
         network=utils.clean_network(network),
