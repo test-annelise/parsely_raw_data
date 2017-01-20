@@ -111,8 +111,32 @@ def copy_from_s3(network,
     connection.commit()
 
 
+def inspect_errors(host="",
+                 user="",
+                 password="",
+                 database="parsely",
+                 port="5439"):
+    connection = psycopg2.connect(host=host, port=port, user=user,
+                                  password=password, database=database)
+    query = """
+        select le.err_reason, le.colname, le.col_length, le.raw_field_value, d.query, d.line_number
+        from stl_load_errors le, stl_loaderror_detail d
+        where d.query = le.query
+        order by le.starttime desc
+        limit 30;
+        """
+    cur = connection.cursor()
+    cur.execute(query)
+    print("error reason | colname | col length | raw field value | query | line number")
+    for rec in cur:
+        line = [str(piece).strip() for piece in rec]
+        print(" | ".join(line))
+    connection.close()
+
+
+
 def main():
-    commands = ['copy_from_s3', 'create_table']
+    commands = ['copy_from_s3', 'create_table', 'inspect_errors']
     parser = utils.get_default_parser("Amazon Redshift utilities for Parse.ly",
                                       commands=commands)
     parser.add_argument("--table_name", type=str, default="rawdata",
@@ -154,6 +178,14 @@ def main():
             database=args.redshift_database,
             port=args.redshift_port,
             debug=args.debug
+        )
+    elif args.command == "inspect_errors":
+        inspect_errors(
+            host=args.redshift_host,
+            user=args.redshift_user,
+            password=args.redshift_password,
+            database=args.redshift_database,
+            port=args.redshift_port
         )
 
 if __name__ == "__main__":
