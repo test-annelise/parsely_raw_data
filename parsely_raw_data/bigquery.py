@@ -2,6 +2,7 @@ from __future__ import absolute_import, print_function
 
 import logging
 import pprint
+import json
 
 from googleapiclient.discovery import build as google_build
 from oauth2client.client import GoogleCredentials
@@ -179,9 +180,10 @@ def main():
         )
     elif args.command == "create_table":
         create_table(
-            project_id=args.project_id,
-            dataset_id=args.dataset_id,
-            table_id=args.table_id
+            project_id=args.bigquery_project_id,
+            dataset_id=args.bigquery_dataset_id,
+            table_id=args.bigquery_table_id,
+            debug=args.debug
         )
 
 if __name__ == "__main__":
