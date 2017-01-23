@@ -147,7 +147,6 @@ def create_table(project_id, table_id, dataset_id, debug=False):
     bigquery = google_build('bigquery', 'v2', credentials=credentials)
     bigquery.tables().insert(projectId=project_id,
                              datasetId=dataset_id,
-                             tableId=table_id,
                              body=schema).execute()
 
 
