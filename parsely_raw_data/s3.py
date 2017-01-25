@@ -3,7 +3,7 @@ from __future__ import absolute_import, print_function
 import gzip
 import json
 from collections import defaultdict
-from io import StringIO
+from io import BytesIO
 
 import boto3
 
@@ -56,7 +56,7 @@ def events_s3(network,
         res = client.list_objects(Bucket=bucket, Prefix=prefix)
         for item in res.get("Contents", []):
             obj = client.get_object(Bucket=bucket, Key=item.get("Key"))
-            with gzip.GzipFile(fileobj=StringIO(obj.get("Body").read()),
+            with gzip.GzipFile(fileobj=BytesIO(obj.get("Body").read()),
                                mode="rb") as f:
                 for part in [a for a in f.read().split('\n') if a]:
                     yield Event.from_dict(json.loads(part))

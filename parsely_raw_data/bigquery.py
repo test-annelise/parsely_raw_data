@@ -116,7 +116,7 @@ def copy_from_s3(network,
                 yield chunk
                 chunk = []
     for events in chunked(s3_stream, 500):
-        write_events_bigquery(events, bq_conn=bq_conn, project_id=project_id,
+        streaming_insert_bigquery(events, bq_conn=bq_conn, project_id=project_id,
                               dataset_id=dataset_id, table_id=table_id)
 
 
