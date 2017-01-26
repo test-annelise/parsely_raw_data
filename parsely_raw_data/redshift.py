@@ -1,5 +1,7 @@
 from __future__ import absolute_import, print_function
 
+from .schema import mk_redshift_schema
+
 import psycopg2
 
 from . import utils
@@ -18,9 +20,17 @@ limitations under the License.
 """
 
 
-def create_table(host="", user="", password="", database="", port="5439"):
+def create_table(table_name="rawdata",
+                 host="",
+                 user="",
+                 password="",
+                 database="parsely",
+                 port="5439",
+                 debug=False):
     """Create a Redshift table using a schema compatible with Parse.ly events
 
+    :param table_name: The Redshift table name to use for creation
+    :type host: str
     :param host: The Redshift host on which to create the table
     :type host: str
     :param user: The Redshift user to use when creating the table
@@ -32,34 +42,11 @@ def create_table(host="", user="", password="", database="", port="5439"):
     :param port: The port on which to connect to Redshift
     :type port: str
     """
-    query = """
-CREATE TABLE events
-(
-    url                             VARCHAR(4096) NOT NULL,
-    apikey                          VARCHAR(256) NOT NULL,
-    action                          VARCHAR(256),
-    display_avail_height            INTEGER,
-    display_avail_width             INTEGER,
-    display_pixel_depth             INTEGER,
-    display_total_height            INTEGER,
-    display_total_width             INTEGER,
-    engaged_time_inc                INTEGER,
-    extra_data                      VARCHAR(4096),
-    referrer                        VARCHAR(1024),
-    session_id                      VARCHAR(256)
-    session_initial_referrer        VARCHAR(512),
-    session_initial_url             VARCHAR(512),
-    session_last_session_timestamp  TIMESTAMP,
-    session_timestamp               TIMESTAMP,
-    timestamp_info_nginx_ms         TIMESTAMP,
-    timestamp_info_override_ms      TIMESTAMP,
-    timestamp_info_pixel_ms         TIMESTAMP,
-    user_agent                      VARCHAR(512),
-    visitor_ip                      VARCHAR(128),
-    visitor_network_id              VARCHAR(128),
-    visitor_site_id                 VARCHAR(128)
-);
-"""
+    query = mk_redshift_schema()
+    query = query.replace(u"parsely.rawdata", table_name)
+    if debug:
+        print("Running the following Redshift CREATE TABLE command:")
+        print(query)
     connection = psycopg2.connect(host=host, port=port, user=user,
                                   password=password, database=database)
     connection.cursor().execute(query)
@@ -68,13 +55,15 @@ CREATE TABLE events
 
 def copy_from_s3(network,
                  s3_prefix,
+                 table_name="rawdata",
                  host="",
                  user="",
                  password="",
-                 database="",
+                 database="parsely",
                  port="5439",
                  access_key_id="",
-                 secret_access_key=""):
+                 secret_access_key="",
+                 debug=False):
     """Use the Redshift COPY command to copy event data from S3
 
     :param network: The Parse.ly network for which to copy data (eg
@@ -83,6 +72,8 @@ def copy_from_s3(network,
     :param s3_prefix: The S3 timestamp directory prefix from which to fetch data
         batches, formatted as YYYY/MM/DD
     :type s3_prefix: str
+    :param table_name: The Redshift table name to use for copying
+    :type host: str
     :param host: The Redshift host to which to write
     :type host: str
     :param user: The Redshift user to use when writing
@@ -98,25 +89,58 @@ def copy_from_s3(network,
     :param secret_access_key: The AWS secret key to use when copying
     :type secret_access_key: str
     """
-    connection = psycopg2.connect(host=host, port=port, user=user,
-                                  password=password, database=database)
-    query = "copy visits\n"
-    "from 's3://parsely-dw-{network}/{s3_prefix}'\n"
-    "credentials 'aws_access_key_id={aws_access_key_id};"
+    query = (
+    "COPY {table_name}\n"
+    "FROM 's3://parsely-dw-{network}/{s3_prefix}'\n"
+    "CREDENTIALS 'aws_access_key_id={aws_access_key_id};"
     "aws_secret_access_key={aws_secret_access_key}'\n"
-    "json as 'auto' gzip;".format(
+    "JSON AS 'auto' GZIP\n"
+    "TRUNCATECOLUMNS;\n"
+	).format(
+	table_name=table_name,
         network=utils.clean_network(network),
         s3_prefix=s3_prefix,
         aws_access_key_id=access_key_id,
         aws_secret_access_key=secret_access_key)
+    if debug:
+        print("Running the following Redshift COPY command:")
+        print(query)
+    connection = psycopg2.connect(host=host, port=port, user=user,
+                                  password=password, database=database)
     connection.cursor().execute(query)
     connection.commit()
 
 
+def inspect_errors(host="",
+                 user="",
+                 password="",
+                 database="parsely",
+                 port="5439"):
+    connection = psycopg2.connect(host=host, port=port, user=user,
+                                  password=password, database=database)
+    query = """
+        select le.err_reason, le.colname, le.col_length, le.raw_field_value, d.query, d.line_number
+        from stl_load_errors le, stl_loaderror_detail d
+        where d.query = le.query
+        order by le.starttime desc
+        limit 30;
+        """
+    cur = connection.cursor()
+    cur.execute(query)
+    print("error reason | colname | col length | raw field value | query | line number")
+    for rec in cur:
+        line = [str(piece).strip() for piece in rec]
+        print(" | ".join(line))
+    connection.close()
+
+
+
 def main():
-    commands = ['copy_from_s3', 'create_table']
+    commands = ['copy_from_s3', 'create_table', 'inspect_errors']
     parser = utils.get_default_parser("Amazon Redshift utilities for Parse.ly",
                                       commands=commands)
+    parser.add_argument("--table_name", type=str, default="rawdata",
+                        help="The name of the Redshift table to create/copy")
     parser.add_argument('--redshift_host', type=str,
                         help='The host string of the Redshift instance to which to '
                              'connect, ending in "redshift.amazonaws.com"')
@@ -126,9 +150,9 @@ def main():
     parser.add_argument('--redshift_password', type=str,
                         help='The password to use when connecting to the Redshift'
                              ' instance')
-    parser.add_argument('--redshift_database', type=str,
+    parser.add_argument('--redshift_database', type=str, default="parsely",
                         help='The Redshift database to which to connect')
-    parser.add_argument('--redshift_port', type=str,
+    parser.add_argument('--redshift_port', type=str, default="5439",
                         help='The port on which to connect to Redshift')
     args = parser.parse_args()
 
@@ -136,15 +160,27 @@ def main():
         copy_from_s3(
             args.network,
             args.s3_prefix,
+            table_name=args.table_name,
             host=args.redshift_host,
             user=args.redshift_user,
             password=args.redshift_password,
             database=args.redshift_database,
             access_key_id=args.aws_access_key_id,
-            secret_access_key=args.aws_secret_access_key
+            secret_access_key=args.aws_secret_access_key,
+            debug=args.debug
         )
     elif args.command == "create_table":
         create_table(
+            table_name=args.table_name,
+            host=args.redshift_host,
+            user=args.redshift_user,
+            password=args.redshift_password,
+            database=args.redshift_database,
+            port=args.redshift_port,
+            debug=args.debug
+        )
+    elif args.command == "inspect_errors":
+        inspect_errors(
             host=args.redshift_host,
             user=args.redshift_user,
             password=args.redshift_password,

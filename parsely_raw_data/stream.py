@@ -69,7 +69,7 @@ def events_kinesis(network, access_key_id="", secret_access_key=""):
                         event_data = json.loads(event_data)
                     except ValueError:
                         continue
-                    event_queue.put(Event.from_dict(event_data['payload']))
+                    event_queue.put(Event.from_dict(event_data))
 
     workers = []
     description = {"HasMoreShards": True}
