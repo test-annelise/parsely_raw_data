@@ -57,9 +57,9 @@ Creating a New Version
 
 These are the steps that should be followed when releasing a new version of this library
 
-* Increment the version number in `__init__.py` according to semantic versioning rules
-* `git commit -m 'increment version'`
-* `git tag x.x.x` where `x.x.x` is the new version number
-* `git push origin master --tags`
+* Increment the version number in ``__init__.py`` according to semantic versioning rules
+* ``git commit -m 'increment version'``
+* ``git tag x.x.x`` where ``x.x.x`` is the new version number
+* ``git push origin master --tags``
 * Create a new release for the new tag in github, noting any relevant changes
-* Push to PyPI with `python setup.py sdist upload`
+* Push to PyPI with ``python setup.py sdist upload``
