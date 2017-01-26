@@ -51,3 +51,15 @@ Module and CLI Guide
 * ``python -m parsely_raw_data.schema``: Inspect schemas for Redshift, BigQuery, and Spark
 * ``python -m parsely_raw_data.redshift``: Create an Amazon Redshift table for events and load data
 * ``python -m parsely_raw_data.bigquery``: Create a Google BigQuery table for events and load data
+
+Creating a New Version
+----------------------
+
+These are the steps that should be followed when releasing a new version of this library
+
+* Increment the version number in `__init__.py` according to semantic versioning rules
+* `git commit -m 'increment version'`
+* `git tag x.x.x` where `x.x.x` is the new version number
+* `git push origin master --tags`
+* Create a new release for the new tag in github, noting any relevant changes
+* Push to PyPI with `python setup.py sdist upload`
