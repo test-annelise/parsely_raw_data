@@ -59,7 +59,7 @@ def events_s3(network,
             with gzip.GzipFile(fileobj=BytesIO(obj.get("Body").read()),
                                mode="rb") as f:
                 for part in [a for a in f.read().split('\n') if a]:
-                    yield Event.from_dict(json.loads(part))
+                    yield json.loads(part)
 
 
 def main():

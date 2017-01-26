@@ -49,7 +49,9 @@ def streaming_insert_bigquery(jsonlines,
         "kind": "bigquery#tableDataInsertAllRequest",
         "skipInvalidRows": False,
         "ignoreUnknownValues": False,
-        "rows": [jsonline for jsonline in jsonlines]
+        "rows": [
+            {"json": line} for line in jsonlines
+        ]
     }
     if bq_conn is None:
         pprint.PrettyPrinter(indent=0).pprint(insert_body)
@@ -108,16 +110,25 @@ def copy_from_s3(network,
                           secret_access_key=secret_access_key,
                           region_name=region_name)
 
+    schema_compliant_fields = [column['name'] for column in mk_bigquery_schema()]
+
+    def schema_compliant(jsonline):
+        return {k: jsonline.get(k, None) for k in schema_compliant_fields}
+
     def chunked(seq, chunk_size):
         chunk = []
         for item in seq:
-            chunk.append(item)
+            chunk.append(schema_compliant(item))
             if len(chunk) >= chunk_size:
                 yield chunk
                 chunk = []
+        if chunk:
+            yield chunk
+
     for events in chunked(s3_stream, 500):
         streaming_insert_bigquery(events, bq_conn=bq_conn, project_id=project_id,
                               dataset_id=dataset_id, table_id=table_id)
+
 
 
 def create_table(project_id, table_id, dataset_id, debug=False):
