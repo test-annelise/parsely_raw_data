@@ -4,3 +4,4 @@ psycopg2
 six
 tablib
 xlsxwriter
+tabulate
