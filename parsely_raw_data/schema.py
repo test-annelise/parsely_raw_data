@@ -46,6 +46,7 @@ SCHEMA = [
     {"key": "metadata_canonical_url", "ex": "http://mashable.com/2016/09/07/airpods-jokes/", "type": str},
     {"key": "metadata_custom_metadata", "ex": "{\"site\":\"Mashable\"}", "type": str},
     {"key": "metadata_duration", "ex": None, "type": int},
+    {"key": "metadata_data_source", "ex": 'crawl', "type": str, "size": 8},
     {"key": "metadata_full_content_word_count", "ex": 174, "type": int},
     {"key": "metadata_image_url", "ex": "http://a.amz.mshcdn.com/media/ZgkyMDE2LzA5LzA3LzU2L0NyeFhpNjNYRUFBSnZwRS5lNDAyMy5qcGcKcAl0aHVtYgkxMjAweDYzMAplCWpwZw/156d0173/3ae/CrxXi63XEAAJvpE.jpg", "type": str},
     {"key": "metadata_page_type", "ex": "post", "type": str, "size": 256},
