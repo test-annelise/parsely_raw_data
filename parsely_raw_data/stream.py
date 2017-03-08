@@ -26,6 +26,11 @@ See the License for the specific language governing permissions and
 limitations under the License.
 """
 
+"""
+Consider the below a demostration of how Kinesis can be utilized with
+the Parse.ly data pipeline; additional configuration may be necessary. 
+Larger publishers in particular will likely need multiple processes.
+"""
 
 def events_kinesis(network, access_key_id="", secret_access_key=""):
     """Yield a stream of events from a Parse.ly Kinesis Stream
