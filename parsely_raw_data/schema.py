@@ -38,11 +38,15 @@ SCHEMA = [
     {"key": "ip_postal", "ex": "94560", "type": str, "size": 64},
     {"key": "ip_subdivision", "ex": "CA", "type": str, "size": 3},
     {"key": "ip_timezone", "ex": "America/Los_Angeles", "type": str, "size": 256},
+    {"key": "ip_market_name", "ex": "New York", "type": str, "size": 256},
+    {"key": "ip_market_nielsen", "ex": "501", "type": str, "size": 3},
+    {"key": "ip_market_doubleclick", "ex": "3", "type": str, "size": 3},
     {"key": "metadata", "ex": True, "type": bool},
     {"key": "metadata_authors", "ex": ["Laura Vitto"], "type": list},
     {"key": "metadata_canonical_url", "ex": "http://mashable.com/2016/09/07/airpods-jokes/", "type": str},
     {"key": "metadata_custom_metadata", "ex": "{\"site\":\"Mashable\"}", "type": str},
     {"key": "metadata_duration", "ex": None, "type": int},
+    {"key": "metadata_data_source", "ex": 'crawl', "type": str, "size": 8},
     {"key": "metadata_full_content_word_count", "ex": 174, "type": int},
     {"key": "metadata_image_url", "ex": "http://a.amz.mshcdn.com/media/ZgkyMDE2LzA5LzA3LzU2L0NyeFhpNjNYRUFBSnZwRS5lNDAyMy5qcGcKcAl0aHVtYgkxMjAweDYzMAplCWpwZw/156d0173/3ae/CrxXi63XEAAJvpE.jpg", "type": str},
     {"key": "metadata_page_type", "ex": "post", "type": str, "size": 256},
@@ -233,8 +237,8 @@ def mk_redshift_table():
             example = repr(example)
         if record.get("date", False) and key.startswith("ts_"):
             type_ = "TIMESTAMP"
-	elif record.get("date", False):
-	    type_ = "BIGINT"
+        elif record.get("date", False):
+            type_ = "BIGINT"
         if record.get("req", False):
             type_ = type_ + " NOT NULL"
         table.append([key, example, type_])
