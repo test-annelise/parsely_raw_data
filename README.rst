@@ -47,7 +47,7 @@ Module and CLI Guide
 
 * ``python -m parsely_raw_data.samples``: Generate data samples in CSV and XLSX format
 * ``python -m parsely_raw_data.s3``: Fetch archived event data from Parse.ly S3 Bucket
-* ``python -m parsely_raw_data.kinesis``: Consume a Parse.ly Kinesis Stream of real-time event data
+* ``python -m parsely_raw_data.stream``: Consume a Parse.ly Kinesis Stream of real-time event data
 * ``python -m parsely_raw_data.schema``: Inspect schemas for Redshift, BigQuery, and Spark
 * ``python -m parsely_raw_data.redshift``: Create an Amazon Redshift table for events and load data
 * ``python -m parsely_raw_data.bigquery``: Create a Google BigQuery table for events and load data
