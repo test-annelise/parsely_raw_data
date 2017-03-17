@@ -28,6 +28,7 @@ SCHEMA = [
     {"key": "display_total_height", "ex": 800, "type": int},
     {"key": "display_total_width", "ex": 1280, "type": int},
     {"key": "engaged_time_inc", "ex": None, "type": int},
+    {"key": "event_id", "ex": "0xe6508eda93d5598367b18555ae9b828d", "type": str, "size": 64, "req": True},
     {"key": "extra_data", "ex": None, "type": object},
     {"key": "flags_is_amp", "ex": None, "type": bool},
     {"key": "ip_city", "ex": "Newark", "type": str},
