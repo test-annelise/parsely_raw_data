@@ -21,6 +21,7 @@ limitations under the License.
 
 
 def create_table(table_name="rawdata",
+                 keep_extra_data=False,
                  host="",
                  user="",
                  password="",
@@ -42,7 +43,7 @@ def create_table(table_name="rawdata",
     :param port: The port on which to connect to Redshift
     :type port: str
     """
-    query = mk_redshift_schema()
+    query = mk_redshift_schema(keep_extra_data=keep_extra_data)
     query = query.replace(u"parsely.rawdata", table_name)
     if debug:
         print("Running the following Redshift CREATE TABLE command:")
@@ -154,6 +155,9 @@ def main():
                         help='The Redshift database to which to connect')
     parser.add_argument('--redshift_port', type=str, default="5439",
                         help='The port on which to connect to Redshift')
+    parser.add_argument('--keep-extra-data', action="store_true",
+                        help='Optional: create a VARCHAR column for extra_data, which'
+                             ' will be saved as a JSON-formatted string.')
     args = parser.parse_args()
 
     if args.command == "copy_from_s3":
@@ -172,6 +176,7 @@ def main():
     elif args.command == "create_table":
         create_table(
             table_name=args.table_name,
+            keep_extra_data=args.keep_extra_data,
             host=args.redshift_host,
             user=args.redshift_user,
             password=args.redshift_password,
