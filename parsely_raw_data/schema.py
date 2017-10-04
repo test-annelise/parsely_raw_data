@@ -246,7 +246,7 @@ def mk_redshift_table():
     return table, headers
 
 
-def mk_redshift_schema():
+def mk_redshift_schema(keep_extra_data=False):
     table, headers = mk_redshift_table()
     ddl = []
     # open
@@ -254,9 +254,13 @@ def mk_redshift_schema():
     for row in table:
         key, _, type_ = row
         if type_ == "JSON":
-            # skip JSON type since we can't do anything with it
-            # without additional ETL steps
-            continue
+            # skip JSON type, unless we want to explicitly
+            # store JSON data as a VARCHAR
+            if keep_extra_data:
+                # convert to VARCHAR
+                type_ = "VARCHAR(4096)"
+            else:
+                continue
         # each line of DDL with key/type
         ddl.append("{:8}{:35} {:25}".format(" ", key, type_ + ","))
     # strip trailing comma
