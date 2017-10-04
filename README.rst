@@ -45,14 +45,16 @@ them yourselves using your own Python scripts.
 Module and CLI Guide
 ~~~~~~~~~~~~~~~~~~~~
 
-If you have the project installed in a virtualenv, you can use the following console scripts:
+If you have the project installed with `pip`, you can use the following console scripts anywhere:
 
 * ``parsely_redshift`` = ``parsely_raw_data.redshift``
 * ``parsely_bigquery`` = ``parsely_raw_data.bigquery``
 * ``parsely_s3`` = ``parsely_raw_data.s3``
 * ``parsely_stream`` = ``parsely_raw_data.stream``
 
-Alternately, you can run each module like this:
+Alternately, you can clone the repo, and run each module from within the repo directory, like this:
+
+``cd <path_to_parsely_raw_data_repo_directory>``
 
 * ``python -m parsely_raw_data.samples``: Generate data samples in CSV and XLSX format
 * ``python -m parsely_raw_data.s3``: Fetch archived event data from Parse.ly S3 Bucket

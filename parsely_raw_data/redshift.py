@@ -155,7 +155,7 @@ def main():
                         help='The Redshift database to which to connect')
     parser.add_argument('--redshift_port', type=str, default="5439",
                         help='The port on which to connect to Redshift')
-    parser.add_argument('--keep-extra-data', dest="keep_extra_data", default=False, action="store_true",
+    parser.add_argument('--keep-extra-data', action="store_true",
                         help='Optional: create a VARCHAR column for extra_data, which'
                              ' will be saved as a JSON-formatted string.')
     args = parser.parse_args()
