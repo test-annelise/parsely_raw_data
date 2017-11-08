@@ -1,3 +1,6 @@
+import parsely_raw_data
+
+
 def test_basic():
     pass
 
