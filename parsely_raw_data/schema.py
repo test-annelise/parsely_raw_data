@@ -209,7 +209,7 @@ def mk_spark_sql_schema(with_visitor_partition=False):
         elif typ is list:
             schema.add(k, ArrayType(StringType()))
         else:
-            raise TypeError, "Don't know how to parse field %s of type %s" % (k, typ)
+            raise TypeError("Don't know how to parse field %r of type %s" % (k, typ))
     if with_visitor_partition:
         schema.add("visitor_partition", IntegerType())
     return schema
